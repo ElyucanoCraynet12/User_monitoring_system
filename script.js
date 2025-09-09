@@ -968,7 +968,6 @@ class FirebaseDataManager {
             if (reading.key) row.setAttribute('data-key', reading.key);
             const timestamp = this.formatDisplayTimestamp(reading.deviceTimestamp || reading.timestamp);
             row.innerHTML = `
-                <td><input type="checkbox" class="log-row-select" aria-label="select row" /></td>
                 <td>${timestamp}</td>
                 <td>${fmtNum(reading.temperature)}</td>
                 <td>${fmtNum(reading.ph)}</td>
@@ -1001,12 +1000,12 @@ class FirebaseDataManager {
     updateAlertsPage() {
         const allAlertsUl = document.querySelector('#alerts-page ul.alert-list.full');
         if (!allAlertsUl || !this.currentWaterCondition) return;
-        const li = this.buildAlertLi(this.currentWaterCondition, /*displayNow*/true);
+        const li = this.buildAlertLi(this.currentWaterCondition, /*displayNow*/true, null, /*includeDismiss*/false);
         allAlertsUl.insertBefore(li, allAlertsUl.firstChild);
-        this.attachAlertDismissBehavior(li);
+        // No dismiss/delete controls in All Alerts
     }
 
-    buildAlertLi(conditionObj, displayNow = false, key = null) {
+    buildAlertLi(conditionObj, displayNow = false, key = null, includeDismiss = true) {
         const li = document.createElement('li');
         const cls = this.getConditionClass(conditionObj.status);
         li.className = `alert ${cls}`;
@@ -1021,7 +1020,7 @@ class FirebaseDataManager {
                 <p><strong>${conditionObj.status}:</strong> Water condition update</p>
                 <small>${ts}</small>
             </div>
-            <button class="dismiss-alert"><i data-feather="x"></i></button>
+            ${includeDismiss ? '<button class="dismiss-alert"><i data-feather="x"></i></button>' : ''}
         `;
         try { window.feather && window.feather.replace(); } catch (_) {}
         return li;
@@ -1037,12 +1036,12 @@ class FirebaseDataManager {
         if (recentUl) recentUl.innerHTML = '';
         if (allAlertsUl) allAlertsUl.innerHTML = '';
         entries.forEach((a)=>{
-            const liFull = this.buildAlertLi(a, false, a.key);
-            if (allAlertsUl) { allAlertsUl.appendChild(liFull); this.attachAlertDismissBehavior(liFull); }
+            const liFull = this.buildAlertLi(a, false, a.key, /*includeDismiss*/false);
+            if (allAlertsUl) { allAlertsUl.appendChild(liFull); }
         });
         // Recent: keep last 4
         const last4 = entries.slice(-4);
-        last4.forEach(a=>{ if (recentUl) { const li = this.buildAlertLi(a, false, a.key); recentUl.appendChild(li); this.attachAlertDismissBehavior(li); } });
+        last4.forEach(a=>{ if (recentUl) { const li = this.buildAlertLi(a, false, a.key, /*includeDismiss*/true); recentUl.appendChild(li); this.attachAlertDismissBehavior(li); } });
     }
     
     getConditionClass(condition) {
@@ -1252,120 +1251,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const page = document.querySelector('#alerts-page .card');
         exportElementToPDF(page, 'all-alerts.pdf');
     });
-    document.getElementById('export-csv')?.addEventListener('click', () => {
-        const table = document.querySelector('#data-log-table');
-        exportTableToCSV(table, 'data-logs.csv');
-    });
-    document.getElementById('export-pdf')?.addEventListener('click', () => {
-        const card = document.querySelector('#datalogs-page .card');
-        exportElementToPDF(card || document.body, 'data-logs.pdf');
-    });
-    document.getElementById('datalogs-export-pdf')?.addEventListener('click', () => {
-        const card = document.querySelector('#datalogs-page .card');
-        exportElementToPDF(card || document.body, 'data-logs.pdf');
-    });
+    // Disable Data Logs export buttons (removed from UI)
 
     // Inject search inputs for Alerts and Data Logs
     (function injectSearchControls(){
         const alertsCardHeader = document.querySelector('#alerts-page .card-header');
-        if (alertsCardHeader && !alertsCardHeader.querySelector('.alerts-search')) {
-            const input = document.createElement('input');
-            input.className = 'alerts-search';
-            input.placeholder = 'Search alerts (MM/DD/YYYY or YYYY-MM-DD)';
-            input.style.marginLeft = 'auto';
-            // Bulk delete button
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'Bulk Delete';
-            delBtn.className = 'btn btn-secondary';
-            delBtn.style.marginLeft = '0.5rem';
-            alertsCardHeader.appendChild(input);
-            alertsCardHeader.appendChild(delBtn);
-            input.addEventListener('input', () => {
-                const q = input.value.trim();
-                const norm = (s)=> s.replace(/\//g,'-');
-                document.querySelectorAll('#alerts-page ul.alert-list.full li.alert').forEach(li => {
-                    const ts = (li.querySelector('.alert-details small')?.textContent || '').trim();
-                    const hay = norm(ts).toLowerCase();
-                    const needle = norm(q).toLowerCase();
-                    li.style.display = hay.includes(needle) ? '' : 'none';
-                });
-            });
-            // Enable multi-select and delete from DB if keys exist under waterCondition/alerts
-            const allUl = document.querySelector('#alerts-page ul.alert-list.full');
-            if (allUl) {
-                allUl.addEventListener('click', (e) => {
-                    const li = e.target.closest('li.alert');
-                    if (!li) return;
-                    li.classList.toggle('selected');
-                });
-                delBtn.addEventListener('click', async () => {
-                    const selected = Array.from(allUl.querySelectorAll('li.alert.selected'));
-                    if (selected.length === 0) return;
-                    // Attempt to delete by key stored in data-key
-                    const ops = selected.map(li => {
-                        const key = li.getAttribute('data-key');
-                        if (!key) { li.remove(); return null; }
-                        const r = window.firebaseRef(window.firebaseDatabase, `waterCondition/alerts/${key}`);
-                        return window.firebaseRemove(r).then(()=> li.remove()).catch(()=>{});
-                    }).filter(Boolean);
-                    await Promise.all(ops);
-                });
-            }
-        }
+        // Do not inject search or bulk delete controls for All Alerts
         const logsHeader = document.querySelector('#datalogs-page .card-header');
-        if (logsHeader && !logsHeader.querySelector('.logs-search')) {
-            const input = document.createElement('input');
-            input.className = 'logs-search';
-            input.placeholder = 'Search logs (MM/DD/YYYY or YYYY-MM-DD)';
-            input.style.marginLeft = '1rem';
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'Bulk Delete';
-            delBtn.className = 'btn btn-secondary';
-            delBtn.style.marginLeft = '0.5rem';
-            logsHeader.appendChild(input);
-            logsHeader.appendChild(delBtn);
-            input.addEventListener('input', () => {
-                const q = input.value.trim();
-                const norm = (s)=> s.replace(/\//g,'-');
-                document.querySelectorAll('#data-log-table tbody tr').forEach(tr => {
-                    const ts = (tr.querySelector('td:nth-child(2)')?.textContent || '').trim();
-                    const match = norm(ts).toLowerCase().includes(norm(q).toLowerCase());
-                    tr.style.display = match ? '' : 'none';
-                });
-            });
-            // Row select + bulk delete by timestamp key if present
-            const tbody = document.querySelector('#data-log-table tbody');
-            if (tbody) {
-                tbody.addEventListener('click', (e) => {
-                    const tr = e.target.closest('tr');
-                    if (!tr) return;
-                    if (e.target.classList.contains('log-row-select')) {
-                        tr.classList.toggle('selected', e.target.checked);
-                    } else {
-                        const cb = tr.querySelector('.log-row-select');
-                        if (cb) { cb.checked = !cb.checked; tr.classList.toggle('selected', cb.checked); }
-                    }
-                });
-                // Select all
-                document.getElementById('logs-select-all')?.addEventListener('change', (e)=>{
-                    const checked = e.target.checked;
-                    tbody.querySelectorAll('tr').forEach(tr=>{
-                        const cb = tr.querySelector('.log-row-select'); if (cb) { cb.checked = checked; tr.classList.toggle('selected', checked); }
-                    });
-                });
-                delBtn.addEventListener('click', async () => {
-                    const selected = Array.from(tbody.querySelectorAll('tr.selected'));
-                    if (!selected.length) return;
-                    const ops = selected.map(tr => {
-                        const key = tr.getAttribute('data-key');
-                        if (!key) { tr.remove(); return null; }
-                        const r = window.firebaseRef(window.firebaseDatabase, `sensorReadings/${key}`);
-                        return window.firebaseRemove(r).then(()=> tr.remove()).catch(()=>{});
-                    }).filter(Boolean);
-                    await Promise.all(ops);
-                });
-            }
-        }
+        // Do not inject search or bulk delete controls for Data Logs
     })();
     // --- LOGOUT & FINAL INIT ---
     document.getElementById('logout-button')?.addEventListener('click', e => {
