@@ -58,7 +58,6 @@
             <li class="active"><a href="#"><i data-feather="home"></i><span data-translate-key="dashboard">Dashboard</span></a></li>
             <li><a href="#"><i data-feather="alert-triangle"></i><span data-translate-key="alerts">Alerts</span></a></li>
             <li><a href="#"><i data-feather="database"></i><span data-translate-key="data_logs">Data Logs</span></a></li>
-            <li><a href="#"><i data-feather="map-pin"></i><span data-translate-key="farm_location">Farm Location</span></a></li>
             <li><a href="#"><i data-feather="settings"></i><span data-translate-key="settings">Settings</span></a></li>
            
         </ul>
@@ -249,7 +248,7 @@
                 <div class="card-header">
                     <h2 data-translate-key="all_alerts">All Alerts</h2>
                     <div style="margin-left:auto; display:flex; gap:.5rem;">
-                        <button id="all-alerts-delete-selected" class="btn btn-danger">Delete Selected</button>
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -264,15 +263,12 @@
              <div class="card">
                 <div class="card-header">
                     <h2>Data Logs</h2>
-                    <button id="export-csv">Export as CSV</button>
-                    <button id="datalogs-export-pdf">Export as PDF</button>
                 </div>
                 <div class="card-body">
                     <div class="data-logs-scrollable">
                         <table id="data-log-table">
                             <thead>
                                 <tr>
-                                    <th><input type="checkbox" id="logs-select-all" aria-label="Select all"></th>
                                     <th>Timestamp</th>
                                     <th>Temperature (°C)</th>
                                     <th>pH Level</th>
@@ -293,7 +289,7 @@
         <div class="content-section" id="farm_location-page" style="display: none;">
             <div class="card">
                 <div class="card-header">
-                    <h2 data-translate-key="farm_location">Farm Location</h2>
+                  
                 </div>
                 <div class="card-body">
                     <div style="width:100%;max-width:100%;">
