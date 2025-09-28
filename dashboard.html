@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELYUCANO CRAYFISH</title>
-    <link rel="icon" href="img/elyucano.jpg" type="image/jpg">
-    <link rel="icon" href="img/elyucano.jpg" type="image/jpg">
+    <title>ELYUCANO Crayfish</title>
+    <!-- Primary favicon (32x32) with version to bust cache -->
+    <link rel="icon" href="img/elyucano.png?v=2" type="image/png" sizes="32x32">
+    <!-- Apple touch icon for iOS/Android homescreen -->
+    <link rel="apple-touch-icon" href="img/elyucano.png?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,6 +60,7 @@
             <li class="active"><a href="#"><i data-feather="home"></i><span data-translate-key="dashboard">Dashboard</span></a></li>
             <li><a href="#"><i data-feather="alert-triangle"></i><span data-translate-key="alerts">Alerts</span></a></li>
             <li><a href="#"><i data-feather="database"></i><span data-translate-key="data_logs">Data Logs</span></a></li>
+            <li><a href="#" data-page="farm_location"><i data-feather="book"></i><span data-translate-key="farm_location">User Manual</span></a></li>
             <li><a href="#"><i data-feather="settings"></i><span data-translate-key="settings">Settings</span></a></li>
            
         </ul>
@@ -76,7 +79,7 @@
                 <div class="user-profile-container">
                     <div class="user-profile" style="display:flex;align-items:center;gap:1rem;">
                         <div class="crayfish-logo" id="expandable-logo" style="cursor:pointer;">
-                            <img src="img/elyucano.jpg" alt="User Logo"/>
+                            <img src="img/elyucano.png" alt="User Logo"/>
                         </div>
                     </div>
                 </div>
@@ -164,8 +167,6 @@
                     <h2 data-translate-key="parameter_trends">Parameter Trends</h2>
                     <div class="time-range-toggle">
                         <button class="active"> Live</button>
-                        <button>7d</button>
-                        <button>30d</button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -186,20 +187,17 @@
             </div>
 
              
-             <div class="card tips-card">
+            <div class="card tips-card">
                 <div class="card-header">
-                    <h2 data-translate-key="system_controller">System Facts</h2>
+                    <h2 data-translate-key="system_guide">System Guide</h2>
                 </div>
                 <div class="card-body">
+                    <p style="margin-top:0.2rem; font-weight:600;">Quick operational tips to keep your system healthy:</p>
                     <ul>
-                        <li>
-                              <a href="controller.html" class="animated-button" data-translate-key="controllers"> Controllers </a>
-                          </li>
-                          <br>
-                        <li><b>You can control:</b></li>
-                        <li>Automated Feeder</li>
-                        <li>Water Drainer</li>
-                        <li>Water Refill</li>
+                        <li>Regularly monitor temperature, pH, and oxygen levels.</li>
+                        <li>Perform partial water changes weekly.</li>
+                        <li>Remove uneaten food to prevent ammonia spikes.</li>
+                        <li>Ensure proper aeration at all times. (See &lt;attachments&gt; above for file contents. You may not need to search or read the file again.)</li>
                     </ul>
                 </div>
             </div>
@@ -246,9 +244,6 @@
             <div class="card">
                 <div class="card-header">
                     <h2 data-translate-key="all_alerts">All Alerts</h2>
-                    <div style="margin-left:auto; display:flex; gap:.5rem;">
-
-                    </div>
                 </div>
                 <div class="card-body">
                     <div class="scrollable-container">
@@ -268,12 +263,13 @@
                         <table id="data-log-table">
                             <thead>
                                 <tr>
+                                    <th><input type="checkbox" id="logs-select-all" aria-label="Select all"></th>
                                     <th>Timestamp</th>
                                     <th>Temperature (°C)</th>
                                     <th>pH Level</th>
                                     <th>Dissolved Oxygen (mg/L)</th>
                                     <th>Turbidity (NTU)</th>
-                                    <th>Sensor ID</th>
+                                    <!-- Sensor ID column removed -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -288,12 +284,151 @@
         <div class="content-section" id="farm_location-page" style="display: none;">
             <div class="card">
                 <div class="card-header">
-                  
+                    <h2><i data-feather="book"></i> User Manual</h2>
                 </div>
-                <div class="card-body">
-                    <div style="width:100%;max-width:100%;">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d1047.0953264896027!2d120.43977473481577!3d16.796283712318598!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sen!2sus!4v1757409566270!5m2!1sen!2sus" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                    </div>
+                <div class="card-body user-manual">
+                    <h3 id="manual-overview">Overview</h3>
+                    <p>This manual helps you install, wire, and operate the ELYUCANO Crayfish Monitoring &amp; Control system. It matches the look and accessibility of the dashboard and guides you through common issues.</p>
+
+                    <h4>Key components</h4>
+                    <ul>
+                        <li><strong>Sensors:</strong> Temperature, pH, Dissolved Oxygen, Turbidity.</li>
+                        <li><strong>Actuators:</strong> Feeder, Water Drain, Water Refill (controlled via relays).</li>
+                        <li><strong>Connectivity:</strong> ESP32 with Wi‑Fi and Firebase logging.</li>
+                    </ul>
+
+                    <h3 id="manual-system-setup">System Setup (Software)</h3>
+                    <ol>
+                        <li>Install the Arduino IDE (v2.x recommended). Add ESP32 boards via Boards Manager. Select <code>ESP32 Dev Module</code> and the correct COM port.</li>
+                        <li>Install required sensor libraries. If present, follow <code>ARDUINO_LIBRARY_SETUP.md</code>.</li>
+                        <li>Open the firmware file (for example <code>ESP32_Smart_Water_Monitoring_System.ino</code> or <code>crayfish_monitoring_system.ino</code>).</li>
+                        <li>Update Wi‑Fi SSID and password and ensure Firebase keys match those used by <code>dashboard.html</code>.</li>
+                        <li>Compile and upload the sketch. Monitor Serial at <code>115200</code> baud to verify sensor reads and Wi‑Fi connection.</li>
+                        <li>Open <code>dashboard.html</code> in a browser. Data tiles should update; use Quick Access to export logs as needed.</li>
+                    </ol>
+
+                    <h3 id="manual-hardware-setup">Hardware Setup</h3>
+                    <ul>
+                        <li>Mount the ESP32 in a ventilated enclosure, away from water splashes.</li>
+                        <li>Use a regulated 5V, 2A supply for sensors and relays; share ground with the ESP32.</li>
+                        <li>Keep analog sensor wires short and twisted to reduce noise. Use waterproof probes and strain relief near tanks.</li>
+                        <li>Relays must be rated above the pump/feeder load; use flyback diodes for DC loads and suitable snubbers for AC loads.</li>
+                    </ul>
+
+                    <h3 id="manual-wiring">Wiring Guide</h3>
+                    <p>Reference mapping (adjust pins if your firmware uses different assignments):</p>
+                    <h4>Temperature (DS18B20)</h4>
+                    <p>Data → <code>GPIO 4</code>, Vcc 3.3V/5V, GND. Add a <code>4.7kΩ</code> pull‑up between Data and Vcc.</p>
+
+                    <h4>pH Sensor (Analog)</h4>
+                    <p>Signal → <code>GPIO 34 (ADC1)</code>, Vcc 5V (per board), GND. Use shielded cable.</p>
+
+                    <h4>Dissolved Oxygen (Analog)</h4>
+                    <p>Signal → <code>GPIO 35 (ADC1)</code>, Vcc per module, GND. Calibrate in air/zero solution.</p>
+
+                    <h4>Turbidity (Analog)</h4>
+                    <p>Signal → <code>GPIO 32 (ADC1)</code>, Vcc 5V, GND. Keep probe vertical and avoid bubbles.</p>
+
+                    <h4>Relays</h4>
+                    <ul>
+                        <li><strong>Relay 1 — Feeder:</strong> IN → <code>GPIO 14</code>, Vcc 5V, GND. Use separate PSU for motors if possible.</li>
+                        <li><strong>Relay 2 — Drain Pump:</strong> IN → <code>GPIO 27</code>, Vcc 5V, GND. Add breaker/RC snubber for AC pumps.</li>
+                        <li><strong>Relay 3 — Refill Valve/Pump:</strong> IN → <code>GPIO 26</code>, Vcc 5V, GND. Float switch in series recommended.</li>
+                    </ul>
+
+                    <h4>I2C (if used)</h4>
+                    <p><code>SDA → GPIO 21</code>, <code>SCL → GPIO 22</code>, Vcc, GND. Add <code>4.7kΩ</code> pull‑ups.</p>
+
+                    <h3 id="manual-first-run">First Run Checklist</h3>
+                    <ul>
+                        <li>Power the ESP32 and confirm it does not overheat and the onboard LED blinks.</li>
+                        <li>Open the Serial Monitor: verify Wi‑Fi connection and that an IP address is shown.</li>
+                        <li>Open the Dashboard: tiles should show values within expected ranges and no critical alerts.</li>
+                        <li>Trigger actuators briefly to confirm relay operation and observe load behavior.</li>
+                        <li>Calibrate sensors following <code>TURBIDITY_CALIBRATION_GUIDE.md</code> and related documents.</li>
+                    </ul>
+
+                    <h3 id="manual-troubleshooting">Troubleshooting</h3>
+                    <details>
+                        <summary><strong>Wi‑Fi not connecting</strong></summary>
+                        <ol>
+                            <li>Verify SSID and password are correct in the firmware.</li>
+                            <li>Confirm the ESP32 is in range and the network supports 2.4GHz (ESP32 often requires 2.4GHz).</li>
+                            <li>Check router logs for blocked devices or MAC filtering.</li>
+                        </ol>
+                    </details>
+
+                    <details>
+                        <summary><strong>Sensors show 0 or erratic values</strong></summary>
+                        <ol>
+                            <li>Verify wiring, shared ground, and sensor power supply voltages.</li>
+                            <li>Keep analog cables short and use shielded cable; add filtering if necessary.</li>
+                            <li>Ensure correct ADC pins are used and that the firmware config matches the wiring.</li>
+                        </ol>
+                    </details>
+
+                    <details>
+                        <summary><strong>Relays click but load doesn’t run</strong></summary>
+                        <ol>
+                            <li>Confirm the relay contacts are rated for the load and wiring is correct.</li>
+                            <li>For motors, ensure sufficient inrush current capacity or use a dedicated motor driver.</li>
+                        </ol>
+                    </details>
+
+                    <details>
+                        <summary><strong>Data not appearing on dashboard</strong></summary>
+                        <ol>
+                            <li>Check the Firebase configuration and ensure the firmware is writing to the same database path used by the dashboard.</li>
+                            <li>Open the browser console for errors and verify real‑time listeners are attached.</li>
+                        </ol>
+                    </details>
+
+                    <h3 id="manual-maintenance">Maintenance</h3>
+                    <ul>
+                        <li>Clean probes weekly in distilled water; recalibrate monthly.</li>
+                        <li>Inspect relay terminals for corrosion and tighten screws.</li>
+                        <li>Backup data exports (CSV/PDF) monthly.</li>
+                    </ul>
+
+                    <h3 id="manual-safety">Safety Notes</h3>
+                    <ul>
+                        <li>Keep mains wiring isolated; use proper enclosures and strain relief.</li>
+                        <li>Add GFCI/RCD protection in wet environments. Never handle live wires near water.</li>
+                        <li>Label all connectors and disconnect power before servicing.</li>
+                    </ul>
+
+                    <p style="margin-top:1rem; font-size:0.95rem; color:var(--text-secondary-color);">For further assistance, contact the development team (see About the Developers) or check the repository documentation files included in the project.</p>
+                </div>
+
+                    <details id="manual-settings">
+                        <summary><strong>Settings</strong></summary>
+                        <p>Use the Settings page to:</p>
+                        <ul>
+                            <li>Toggle Dark Mode for the UI.</li>
+                            <li>Change application language (English, Tagalog, Ilocano).</li>
+                            <li>Configure device network settings (if available) via the Configuration manager.</li>
+                        </ul>
+                    </details>
+
+                    <details id="manual-troubleshooting">
+                        <summary><strong>Troubleshooting</strong></summary>
+                        <ul>
+                            <li>If sensor values are missing, check the device network and Firebase connection.</li>
+                            <li>Refresh the page to re-establish real-time listeners.</li>
+                            <li>Check the browser console for error messages (open Developer Tools).</li>
+                        </ul>
+                    </details>
+
+                    <details id="manual-contact">
+                        <summary><strong>Contact & Support</strong></summary>
+                        <p>For assistance, reach out to the development team:</p>
+                        <ul>
+                            <li>Lead Developer: rosariochristian325@gmail.com</li>
+                            <li>Support: elyucano_crayfish on social platforms</li>
+                        </ul>
+                    </details>
+
+                    <p style="margin-top:1rem; font-size:0.95rem; color:var(--text-secondary-color);">Tip: click any section header to expand or collapse the detailed instructions.</p>
                 </div>
             </div>
         </div>
@@ -365,7 +500,7 @@
         <div id="logo-modal" class="logo-modal">
             <div class="logo-modal-content">
                 <button class="logo-modal-close" id="logo-modal-close">&times;</button>
-                <img src="img/elyucano.jpg" alt="Logo Large" class="logo-modal-img">
+                <img src="img/elyucano.png" alt="Logo Large" class="logo-modal-img">
             </div>
         </div>
 
@@ -426,7 +561,7 @@
                 </p>
             </div>
             <div class="footer-section footer-logo-container">
-                <img src="img/elyucano.jpg" alt="Company Logo" class="footer-logo" style="border-radius: 50%;">
+                <img src="img/elyucano.png" alt="Company Logo" class="footer-logo" style="border-radius: 50%;">
             </div>
             <div class="footer-section links">
                 <h3 data-translate-key="quick_links">Quick Links</h3>
