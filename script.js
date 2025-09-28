@@ -7,7 +7,7 @@ const translations = {
         "dashboard": "Dashboard",
         "alerts": "Alerts",
         "data_logs": "Data Logs",
-        "farm_location": "Farm Location",
+    "farm_location": "User Manual",
         "settings": "Settings",
         "logout": "Exit",
         "dashboard_overview": "Dashboard Overview",
@@ -19,7 +19,7 @@ const translations = {
         "warning": "Warning",
         "parameter_trends": "Parameter Trends",
         "recent_alerts": "Recent Alerts",
-        "system_controller": "System Controller",
+    "system_guide": "System Guide",
         "controllers": "Controllers",
         "water_quality_tips": "Water Quality Tips",
         "quick_access": "Quick Access",
@@ -87,7 +87,7 @@ const translations = {
         "dashboard": "Dasbord",
         "alerts": "Mga Alerto",
         "data_logs": "Mga Log ng Datos",
-        "farm_location": "Lokasyon ng Bukid",
+    "farm_location": "Manwal ng Gumagamit",
         "settings": "Mga Setting",
         "logout": "Lumabas",
         "dashboard_overview": "Pangkalahatang-ideya ng Dasbord",
@@ -99,7 +99,7 @@ const translations = {
         "warning": "Babala",
         "parameter_trends": "Mga Trend ng Parameter",
         "recent_alerts": "Mga Kamakailang Alerto",
-        "system_controller": "Kontrol ng Sistema",
+    "system_guide": "Gabay ng Sistema",
         "controllers": "Mga Kontrol",
         "water_quality_tips": "Mga Tip sa Kalidad ng Tubig",
         "quick_access": "Mabilisang Pag-access",
@@ -167,7 +167,7 @@ const translations = {
         "dashboard": "Dashboard",
         "alerts": "Dagiti Alerto",
         "data_logs": "Dagiti Log ti Datos",
-        "farm_location": "Lokasion ti Talun",
+    "farm_location": "Gamit a Manual",
         "settings": "Dagiti Setting",
         "logout": "Rummuar",
         "dashboard_overview": "Sangkabuuan ti Dashboard",
@@ -179,16 +179,16 @@ const translations = {
         "warning": "Pakdaar",
         "parameter_trends": "Dagiti Trend ti Parameter",
         "recent_alerts": "Dagiti Baro nga Alerto",
-        "system_controller": "Kontroler ti Sistema",
+    "system_guide": "Gabay ti Sistema",
         "controllers": "Dagiti Kontroler",
         "water_quality_tips": "Dagiti Balakad ti Kalidad ti Danum",
-        "quick_access": "Napardas a Panagserrek",
+        "quick_access": "Nadaras a Pag-access",
         "export_pdf": "I-export kas PDF",
         "export_csv": "I-export kas CSV",
         "about_developers": "Maipapan Kadagiti Developer",
         "lead_developer": "Pangulo a Developer",
         "language": "Pagsasao",
-        "quick_links": "Napardas a Link",
+        "quick_links": "Dagiti Link",
         "sensors": "Dagiti Sensor",
         "about": "Maipapan",
         "contact": "Kontaken",
@@ -309,12 +309,13 @@ function setLanguage(lang) {
     // Data logs table headers
     if (document.getElementById('data-log-table')) {
         const ths = document.querySelectorAll('#data-log-table thead th');
-        if (ths.length === 5) {
-            ths[0].textContent = translations[lang]?.timestamp || ths[0].textContent;
-            ths[1].textContent = translations[lang]?.temperature_c || ths[1].textContent;
-            ths[2].textContent = translations[lang]?.ph_level_header || ths[2].textContent;
-            ths[3].textContent = translations[lang]?.dissolved_oxygen_mg || ths[3].textContent;
-            ths[4].textContent = translations[lang]?.sensor_id || ths[4].textContent;
+        // Expected columns: checkbox, timestamp, temperature, pH, dissolved oxygen, turbidity
+        if (ths.length >= 6) {
+            ths[1].textContent = translations[lang]?.timestamp || ths[1].textContent;
+            ths[2].textContent = translations[lang]?.temperature_c || ths[2].textContent;
+            ths[3].textContent = translations[lang]?.ph_level_header || ths[3].textContent;
+            ths[4].textContent = translations[lang]?.dissolved_oxygen_mg || ths[4].textContent;
+            ths[5].textContent = translations[lang]?.temperature_c ? translations[lang]?.turbidity || ths[5].textContent : ths[5].textContent;
         }
     }
     // Alerts sample phrases
@@ -968,12 +969,12 @@ class FirebaseDataManager {
             if (reading.key) row.setAttribute('data-key', reading.key);
             const timestamp = this.formatDisplayTimestamp(reading.deviceTimestamp || reading.timestamp);
             row.innerHTML = `
+                <td><input type="checkbox" class="log-row-select" aria-label="select row" /></td>
                 <td>${timestamp}</td>
                 <td>${fmtNum(reading.temperature)}</td>
                 <td>${fmtNum(reading.ph)}</td>
                 <td>${fmtNum(reading.dissolvedOxygen)}</td>
                 <td>${fmtNum(reading.turbidity)}</td>
-                <td>${reading.sensorId ? String(reading.sensorId) : ''}</td>
             `;
             // Insert at top (newest first)
             dataLogsTable.insertBefore(row, dataLogsTable.firstChild);
@@ -1000,12 +1001,12 @@ class FirebaseDataManager {
     updateAlertsPage() {
         const allAlertsUl = document.querySelector('#alerts-page ul.alert-list.full');
         if (!allAlertsUl || !this.currentWaterCondition) return;
-        const li = this.buildAlertLi(this.currentWaterCondition, /*displayNow*/true, null, /*includeDismiss*/false);
+        const li = this.buildAlertLi(this.currentWaterCondition, /*displayNow*/true);
         allAlertsUl.insertBefore(li, allAlertsUl.firstChild);
-        // No dismiss/delete controls in All Alerts
+        this.attachAlertDismissBehavior(li);
     }
 
-    buildAlertLi(conditionObj, displayNow = false, key = null, includeDismiss = true) {
+    buildAlertLi(conditionObj, displayNow = false, key = null) {
         const li = document.createElement('li');
         const cls = this.getConditionClass(conditionObj.status);
         li.className = `alert ${cls}`;
@@ -1020,7 +1021,7 @@ class FirebaseDataManager {
                 <p><strong>${conditionObj.status}:</strong> Water condition update</p>
                 <small>${ts}</small>
             </div>
-            ${includeDismiss ? '<button class="dismiss-alert"><i data-feather="x"></i></button>' : ''}
+            <button class="dismiss-alert"><i data-feather="x"></i></button>
         `;
         try { window.feather && window.feather.replace(); } catch (_) {}
         return li;
@@ -1036,12 +1037,12 @@ class FirebaseDataManager {
         if (recentUl) recentUl.innerHTML = '';
         if (allAlertsUl) allAlertsUl.innerHTML = '';
         entries.forEach((a)=>{
-            const liFull = this.buildAlertLi(a, false, a.key, /*includeDismiss*/false);
-            if (allAlertsUl) { allAlertsUl.appendChild(liFull); }
+            const liFull = this.buildAlertLi(a, false, a.key);
+            if (allAlertsUl) { allAlertsUl.appendChild(liFull); this.attachAlertDismissBehavior(liFull); }
         });
         // Recent: keep last 4
         const last4 = entries.slice(-4);
-        last4.forEach(a=>{ if (recentUl) { const li = this.buildAlertLi(a, false, a.key, /*includeDismiss*/true); recentUl.appendChild(li); this.attachAlertDismissBehavior(li); } });
+        last4.forEach(a=>{ if (recentUl) { const li = this.buildAlertLi(a, false, a.key); recentUl.appendChild(li); this.attachAlertDismissBehavior(li); } });
     }
     
     getConditionClass(condition) {
@@ -1251,14 +1252,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const page = document.querySelector('#alerts-page .card');
         exportElementToPDF(page, 'all-alerts.pdf');
     });
-    // Disable Data Logs export buttons (removed from UI)
+    // Data Logs export buttons removed — export handlers intentionally disabled.
 
     // Inject search inputs for Alerts and Data Logs
     (function injectSearchControls(){
-        const alertsCardHeader = document.querySelector('#alerts-page .card-header');
-        // Do not inject search or bulk delete controls for All Alerts
-        const logsHeader = document.querySelector('#datalogs-page .card-header');
-        // Do not inject search or bulk delete controls for Data Logs
+        // Alerts search, row-select and bulk-delete controls removed per request.
+        // Data Logs search and bulk-delete controls removed per request.
     })();
     // --- LOGOUT & FINAL INIT ---
     document.getElementById('logout-button')?.addEventListener('click', e => {
