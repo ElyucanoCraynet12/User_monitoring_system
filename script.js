@@ -1253,17 +1253,6 @@ document.addEventListener('DOMContentLoaded', function () {
         exportElementToPDF(page, 'all-alerts.pdf');
     });
     // Data Logs export buttons removed — export handlers intentionally disabled.
-    // Re-enable Data Logs CSV export: hook the Quick Access button to export the Data Logs table.
-    document.getElementById('export-csv')?.addEventListener('click', () => {
-        const table = document.querySelector('#data-log-table');
-        if (!table) {
-            // Notify user in UI if table isn't present
-            try { alert('Data Logs table not found on this page.'); } catch (_) { console.warn('Data Logs table not found'); }
-            return;
-        }
-        // Export the full table (includes header row)
-        exportTableToCSV(table, 'data-logs.csv');
-    });
 
     // Inject search inputs for Alerts and Data Logs
     (function injectSearchControls(){
