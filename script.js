@@ -401,7 +401,7 @@ function setLanguage(lang) {
         }
     });
     // PDF File Generator for Data Logs
-    document.querySelectorAll('.quick-access-card .card-body p strong').forEach(strong => {
+    document.querySelectorAll('.get-to-know-card .card-body p strong').forEach(strong => {
         if (strong.textContent.trim() === 'PDF File Generator for Data Logs') {
             strong.textContent = {
                 en: 'PDF File Generator for Data Logs',
